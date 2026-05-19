@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelForge — PDF & Image Toolkit</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f5f3ef;color:#1a1814;min-height:100vh;}
+a{color:inherit;}
+
+/* HEADER */
+header{background:#1a1814;padding:0 24px;position:sticky;top:0;z-index:100;}
+.hdr{display:flex;align-items:center;justify-content:space-between;height:52px;}
+.logo{font-size:18px;font-weight:700;color:#fff;letter-spacing:-.3px;display:flex;align-items:center;gap:9px;}
+.logo-box{width:28px;height:28px;background:#d4500e;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.badges{display:flex;gap:6px;}
+.badge{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;}
+.b1{background:rgba(212,80,14,.2);color:#f07040;}
+.b2{background:rgba(80,180,120,.15);color:#50c080;}
+
+/* HERO */
+.hero{padding:40px 24px 28px;max-width:1260px;margin:0 auto;}
+.hero h1{font-size:clamp(26px,4vw,48px);font-weight:800;letter-spacing:-1.2px;line-height:1.08;margin-bottom:10px;}
+.hero h1 span{color:#d4500e;}
+.hero p{color:#7a736a;font-size:15px;max-width:460px;line-height:1.6;}
+.stats{display:flex;gap:0;border:1px solid #dedad0;border-radius:10px;overflow:hidden;background:#fff;margin-top:20px;width:fit-content;}
+.stat{padding:12px 20px;text-align:center;border-right:1px solid #dedad0;}
+.stat:last-child{border-right:none;}
+.stat-n{font-size:18px;font-weight:800;color:#d4500e;}
+.stat-l{font-size:10px;color:#9a9388;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:1px;}
+
+/* TABS */
+.tabs-wrap{max-width:1260px;margin:0 auto;padding:0 24px;}
+.tabs{display:flex;gap:3px;background:#ece9e2;padding:3px;border-radius:9px;width:fit-content;border:1px solid #dedad0;margin-bottom:20px;}
+.tab{padding:7px 18px;border-radius:7px;border:none;background:transparent;color:#7a736a;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.tab:hover{color:#1a1814;}
+.tab.on{background:#fff;color:#1a1814;box-shadow:0 1px 4px rgba(0,0,0,.1);}
+
+/* GRID */
+.main{max-width:1260px;margin:0 auto;padding:0 24px 48px;}
+.sec-lbl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9a9388;margin:20px 0 10px;}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:8px;}
+.card{background:#fff;border:1px solid #dedad0;border-radius:12px;padding:16px;cursor:pointer;transition:all .18s;position:relative;}
+.card::after{content:'→';position:absolute;right:14px;bottom:14px;font-size:14px;opacity:0;color:#d4500e;transition:all .18s;transform:translateX(-4px);}
+.card:hover{border-color:#d4500e;box-shadow:0 2px 12px rgba(212,80,14,.1);transform:translateY(-1px);}
+.card:hover::after{opacity:1;transform:translateX(0);}
+.card-ico{font-size:22px;margin-bottom:8px;display:block;}
+.card-name{font-size:13px;font-weight:700;margin-bottom:3px;color:#1a1814;}
+.card-desc{font-size:11px;color:#7a736a;line-height:1.45;}
+
+/* MODAL OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:rgba(26,24,20,.55);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:20px;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border:1px solid #dedad0;border-radius:18px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 12px 48px rgba(0,0,0,.18);}
+.modal-hd{display:flex;justify-content:space-between;align-items:flex-start;padding:20px 22px 16px;border-bottom:1px solid #eae7e0;position:sticky;top:0;background:#fff;z-index:5;}
+.modal-title{font-size:16px;font-weight:700;color:#1a1814;letter-spacing:-.2px;}
+.modal-sub{font-size:11px;color:#9a9388;margin-top:3px;}
+.close-btn{width:28px;height:28px;border-radius:7px;border:1px solid #dedad0;background:#f5f3ef;color:#7a736a;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.close-btn:hover{border-color:#d4500e;color:#d4500e;}
+.modal-body{padding:20px 22px;}
+
+/* DROP ZONE */
+.dz{border:2px dashed #dedad0;border-radius:10px;padding:26px;text-align:center;cursor:pointer;margin-bottom:14px;position:relative;background:#f9f7f4;transition:all .18s;}
+.dz:hover,.dz.over{border-color:#d4500e;background:rgba(212,80,14,.03);}
+.dz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.dz-ico{font-size:30px;margin-bottom:8px;}
+.dz-lbl{font-size:13px;font-weight:600;color:#1a1814;margin-bottom:3px;}
+.dz-sub{font-size:11px;color:#9a9388;}
+.flist{list-style:none;margin-bottom:12px;}
+.fi{display:flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;background:#f5f3ef;border:1px solid #eae7e0;margin-bottom:5px;font-size:12px;}
+.fi-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;color:#1a1814;}
+.fi-sz{color:#9a9388;font-size:11px;flex-shrink:0;}
+
+/* CONTROLS */
+.ctrl{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap;}
+.clbl{font-size:12px;font-weight:600;color:#7a736a;min-width:74px;flex-shrink:0;}
+.fw{width:100%;}
+input[type=range]{flex:1;accent-color:#d4500e;cursor:pointer;min-width:70px;}
+input[type=number],input[type=text],input[type=password],select,textarea{background:#fff;border:1.5px solid #dedad0;border-radius:7px;color:#1a1814;font-family:inherit;font-size:13px;padding:7px 11px;transition:border .15s;}
+input[type=number]:focus,input[type=text]:focus,input[type=password]:focus,select:focus,textarea:focus{outline:none;border-color:#d4500e;}
+input[type=number]{width:88px;}
+input[type=text],input[type=password]{flex:1;}
+select{flex:1;cursor:pointer;}
+textarea{resize:vertical;min-height:76px;width:100%;}
+input[type=color]{width:36px;height:32px;border:1.5px solid #dedad0;border-radius:6px;cursor:pointer;background:none;padding:2px;}
+input[type=checkbox]{width:15px;height:15px;accent-color:#d4500e;cursor:pointer;}
+.val{font-size:12px;font-weight:700;color:#d4500e;min-width:36px;text-align:right;flex-shrink:0;}
+.note{font-size:11px;color:#9a9388;margin-bottom:10px;line-height:1.5;}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px;}
+button.go{background:#d4500e;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+button.go:hover{background:#bf470c;transform:translateY(-1px);}
+
+/* STATUS */
+.status{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-top:10px;display:none;}
+.status.show{display:block;}
+.ok{background:rgba(26,107,74,.1);color:#1a6b4a;border:1px solid rgba(26,107,74,.2);}
+.er{background:rgba(200,38,27,.08);color:#c8261b;border:1px solid rgba(200,38,27,.15);}
+.inf{background:rgba(44,74,158,.08);color:#2c4a9e;border:1px solid rgba(44,74,158,.15);}
+
+/* PROGRESS */
+.prog{height:4px;background:#eae7e0;border-radius:2px;margin-top:9px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,#d4500e,#e87040);border-radius:2px;width:0%;transition:width .3s;}
+
+/* OUTPUT BOX */
+.out-box{background:#f5f3ef;border:1px solid #eae7e0;border-radius:8px;padding:11px;font-size:11px;font-family:monospace;color:#1a1814;max-height:180px;overflow-y:auto;white-space:pre;display:none;margin-top:9px;line-height:1.7;}
+.out-box.show{display:block;}
+
+/* FOOTER */
+footer{text-align:center;padding:32px 24px;color:#9a9388;font-size:12px;border-top:1px solid #dedad0;}
+footer strong{color:#d4500e;}
+
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-thumb{background:#dedad0;border-radius:3px;}
+
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr;}.hero h1{font-size:28px;}.stats{display:none;}}
+@media(max-width:420px){.grid{grid-template-columns:1fr;}.ctrl{flex-direction:column;align-items:flex-start;}.clbl{min-width:auto;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr">
+    <div class="logo"><div class="logo-box">⚡</div>PixelForge</div>
+    <div class="badges">
+      <span class="badge b1">🔒 100% Offline</span>
+      <span class="badge b2">✓ No Uploads</span>
+    </div>
+  </div>
+</header>
+
+<div class="hero">
+  <h1>Every PDF & Image Edit<br><span>You'll Ever Need</span></h1>
+  <p>42 tools — merge, split, convert, crop, compress, watermark and more. Everything runs in your browser. Nothing leaves your device.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-n">42+</div><div class="stat-l">Tools</div></div>
+    <div class="stat"><div class="stat-n">0</div><div class="stat-l">Uploads</div></div>
+    <div class="stat"><div class="stat-n">∞</div><div class="stat-l">Free Uses</div></div>
+    <div class="stat"><div class="stat-n">0</div><div class="stat-l">API Keys</div></div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab on" data-tab="all">All tools</button>
+    <button class="tab" data-tab="pdf">📄 PDF</button>
+    <button class="tab" data-tab="img">🖼️ Image</button>
+    <button class="tab" data-tab="convert">🔀 Convert</button>
+  </div>
+</div>
+
+<div class="main" id="main"></div>
+
+<footer>
+  Powered by <strong>pdf-lib</strong> · <strong>JSZip</strong> · <strong>Canvas API</strong> · <strong>FileReader API</strong><br>
+  Your files never leave your device. No servers. No accounts. No limits.
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="mTitle"></div>
+        <div class="modal-sub" id="mSub"></div>
+      </div>
+      <button class="close-btn" id="closeBtn">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// TOOL REGISTRY
+// ═══════════════════════════════════════════
+const TOOLS = [
+  {id:'merge-pdf',    cat:'pdf',  ico:'🔗', name:'Merge PDFs',           desc:'Combine 2+ PDFs into one document'},
+  {id:'split-pdf',    cat:'pdf',  ico:'✂️', name:'Split PDF',            desc:'Extract pages or split every page into a ZIP'},
+  {id:'rotate-pdf',   cat:'pdf',  ico:'🔄', name:'Rotate PDF',           desc:'Rotate all or specific pages 90°/180°/270°'},
+  {id:'compress-pdf', cat:'pdf',  ico:'🗜️', name:'Compress PDF',         desc:'Reduce PDF file size with object stream optimization'},
+  {id:'delete-pages', cat:'pdf',  ico:'🗑️', name:'Delete Pages',         desc:'Remove specific pages by number'},
+  {id:'reorder-pages',cat:'pdf',  ico:'↕️', name:'Reorder Pages',        desc:'Rearrange pages into any custom order'},
+  {id:'add-blank',    cat:'pdf',  ico:'➕', name:'Add Blank Pages',      desc:'Insert blank pages at any position'},
+  {id:'watermark-pdf',cat:'pdf',  ico:'💧', name:'Watermark PDF',        desc:'Add diagonal text watermark to every page'},
+  {id:'page-numbers', cat:'pdf',  ico:'🔢', name:'Add Page Numbers',     desc:'Stamp page numbers at top or bottom'},
+  {id:'pdf-crop',     cat:'pdf',  ico:'📏', name:'Crop PDF Margins',     desc:'Set crop box margins on every page'},
+  {id:'pdf-info',     cat:'pdf',  ico:'ℹ️', name:'PDF Info',             desc:'View metadata, page count and page size'},
+  {id:'resize-img',   cat:'img',  ico:'📐', name:'Resize Image',         desc:'Resize to exact pixels, percentage or fit-to-box'},
+  {id:'compress-img', cat:'img',  ico:'🗜️', name:'Compress Image',       desc:'Reduce image file size with quality control'},
+  {id:'crop-img',     cat:'img',  ico:'✂️', name:'Crop Image',           desc:'Crop by pixel coordinates or aspect ratio'},
+  {id:'rotate-img',   cat:'img',  ico:'🔄', name:'Rotate & Flip',        desc:'Rotate any angle, flip horizontal or vertical'},
+  {id:'grayscale-img',cat:'img',  ico:'⬛', name:'Grayscale / B&W',      desc:'Convert to grayscale, high-contrast B&W or sepia'},
+  {id:'blur-img',     cat:'img',  ico:'🌫️', name:'Blur Image',           desc:'Apply Gaussian blur effect'},
+  {id:'sharpen-img',  cat:'img',  ico:'🔪', name:'Sharpen Image',        desc:'Enhance sharpness with convolution kernel'},
+  {id:'brightness-img',cat:'img', ico:'☀️', name:'Brightness & Contrast',desc:'Adjust brightness, contrast, saturation'},
+  {id:'hue-img',      cat:'img',  ico:'🌈', name:'Hue / Sepia / Warmth', desc:'Shift hue, apply sepia or adjust warmth'},
+  {id:'invert-img',   cat:'img',  ico:'🔃', name:'Invert Colors',        desc:'Create a negative of the image'},
+  {id:'add-text-img', cat:'img',  ico:'🅰️', name:'Add Text',             desc:'Overlay text with font, size, color & position'},
+  {id:'watermark-img',cat:'img',  ico:'💧', name:'Watermark Image',      desc:'Tiled diagonal or corner watermark text'},
+  {id:'border-img',   cat:'img',  ico:'🖼️', name:'Add Border',           desc:'Add a solid color border frame'},
+  {id:'round-img',    cat:'img',  ico:'⭕', name:'Round Corners',        desc:'Round corners or full circle crop (PNG)'},
+  {id:'collage-img',  cat:'img',  ico:'🗃️', name:'Collage',              desc:'Merge 2–4 images side-by-side, stacked or 2×2'},
+  {id:'split-img',    cat:'img',  ico:'⊞',  name:'Split into Tiles',     desc:'Split image into equal tiles + ZIP'},
+  {id:'pixelate-img', cat:'img',  ico:'🟦', name:'Pixelate',             desc:'Apply mosaic pixel effect'},
+  {id:'vignette-img', cat:'img',  ico:'🌑', name:'Vignette',             desc:'Add dark corner vignette effect'},
+  {id:'bg-color-img', cat:'img',  ico:'🎨', name:'Add Background',       desc:'Fill transparent PNG with solid color'},
+  {id:'strip-exif',   cat:'img',  ico:'🧹', name:'Strip EXIF Metadata',  desc:'Remove GPS, camera info and timestamps'},
+  {id:'opacity-img',  cat:'img',  ico:'👁️', name:'Adjust Opacity',       desc:'Make image semi-transparent (outputs PNG)'},
+  {id:'img-to-pdf',   cat:'convert',ico:'🖼️',name:'Images → PDF',        desc:'Convert JPG/PNG/WebP images to a PDF'},
+  {id:'pdf-to-jpg',   cat:'convert',ico:'📄',name:'PDF → JPG ZIP',       desc:'Each PDF page becomes a JPG image'},
+  {id:'pdf-to-png',   cat:'convert',ico:'📄',name:'PDF → PNG ZIP',       desc:'Each PDF page becomes a PNG image'},
+  {id:'jpg-to-png',   cat:'convert',ico:'🔀',name:'JPG → PNG',           desc:'Convert JPEG to lossless PNG format'},
+  {id:'png-to-jpg',   cat:'convert',ico:'🔀',name:'PNG → JPG',           desc:'Flatten transparency and convert to JPEG'},
+  {id:'webp-to-jpg',  cat:'convert',ico:'🔀',name:'WebP → JPG',          desc:'Convert WebP images to JPEG'},
+  {id:'jpg-to-webp',  cat:'convert',ico:'🔀',name:'JPG/PNG → WebP',      desc:'Convert to modern WebP for smaller size'},
+  {id:'merge-imgs',   cat:'convert',ico:'🔗',name:'Merge Images → PDF',  desc:'Combine images side-by-side → PDF or image file'},
+  {id:'pdf-pages-zip',cat:'convert',ico:'📦',name:'PDF Pages → ZIP',     desc:'Extract every page as images into a ZIP'},
+];
+
+// ═══════════════════════════════════════════
+// BUILD GRIDS
+// ═══════════════════════════════════════════
+function cardHTML(t) {
+  return `<div class="card" data-tool="${t.id}">
+    <span class="card-ico">${t.ico}</span>
+    <div class="card-name">${t.name}</div>
+    <div class="card-desc">${t.desc}</div>
+  </div>`;
+}
+
+function renderMain(cat) {
+  const main = document.getElementById('main');
+  if (cat !== 'all') {
+    const list = TOOLS.filter(t => t.cat === cat);
+    main.innerHTML = `<div class="grid">${list.map(cardHTML).join('')}</div>`;
+    return;
+  }
+  const pdf = TOOLS.filter(t => t.cat === 'pdf');
+  const img = TOOLS.filter(t => t.cat === 'img');
+  const cv  = TOOLS.filter(t => t.cat === 'convert');
+  main.innerHTML =
+    `<div class="sec-lbl">PDF Tools</div><div class="grid">${pdf.map(cardHTML).join('')}</div>` +
+    `<div class="sec-lbl">Image Tools</div><div class="grid">${img.map(cardHTML).join('')}</div>` +
+    `<div class="sec-lbl">Conversion Tools</div><div class="grid">${cv.map(cardHTML).join('')}</div>`;
+}
+
+renderMain('all');
+
+// ═══════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('.tab');
+  if (!b) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  b.classList.add('on');
+  renderMain(b.dataset.tab);
+});
+
+// ═══════════════════════════════════════════
+// GLOBAL EVENT DELEGATION
+// ═══════════════════════════════════════════
+document.addEventListener('click', e => {
+  const card = e.target.closest('[data-tool]');
+  if (card) { openTool(card.dataset.tool); return; }
+  if (e.target.closest('#closeBtn')) { closeModal(); return; }
+  if (e.target === document.getElementById('overlay')) { closeModal(); return; }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ═══════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════
+function openTool(id) {
+  const T = TOOLS.find(t => t.id === id);
+  document.getElementById('mTitle').textContent = T ? T.ico + ' ' + T.name : '';
+  document.getElementById('mSub').textContent = T ? T.desc : '';
+  document.getElementById('mBody').innerHTML = '';
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  buildTool(id);
+}
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('mBody').innerHTML = '';
+  document.body.style.overflow = '';
+}
+
+// ═══════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════
+function fmtSz(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(2) + ' MB';
+}
+function dlBlob(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 9000);
+}
+function mkCvs(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+function cvBlob(c, type = 'image/jpeg', q = 0.92) { return new Promise(r => c.toBlob(r, type, q)); }
+function loadImg(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = e => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = e.target.result; };
+    r.onerror = rej; r.readAsDataURL(file);
+  });
+}
+function setSt(msg, type = 'ok') {
+  let el = document.getElementById('st');
+  if (!el) { el = document.createElement('div'); el.id = 'st'; document.getElementById('mBody').appendChild(el); }
+  el.textContent = msg; el.className = 'status show ' + type;
+}
+function setProg(pct) { const el = document.getElementById('pf'); if (el) el.style.width = pct + '%'; }
+function makeDZ(accept, multi = false, lbl = 'Drop file here or click to browse') {
+  return `<div class="dz" id="dz">
+    <input type="file" id="fi" accept="${accept}"${multi ? ' multiple' : ''}>
+    <div class="dz-ico">📂</div>
+    <div class="dz-lbl">${lbl}</div>
+    <div class="dz-sub">or click to browse</div>
+  </div><ul class="flist" id="fl"></ul>`;
+}
+function setupDZ(cb) {
+  const dz = document.getElementById('dz'), fi = document.getElementById('fi');
+  if (!dz || !fi) return;
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+  dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); cb([...e.dataTransfer.files]); });
+  fi.addEventListener('change', () => { if (fi.files.length) cb([...fi.files]); });
+}
+function renderFL(files) {
+  const ul = document.getElementById('fl'); if (!ul) return;
+  ul.innerHTML = files.map(f => `<li class="fi"><span>📄</span><span class="fi-name">${f.name}</span><span class="fi-sz">${fmtSz(f.size)}</span></li>`).join('');
+}
+function ctrl(lbl, inner) { return `<div class="ctrl"><span class="clbl">${lbl}</span>${inner}</div>`; }
+function addGoBtn(fn) { setTimeout(() => { const b = document.getElementById('go'); if (b) b.addEventListener('click', fn); }, 0); }
+function wireRanges() {
+  document.querySelectorAll('input[type=range][data-out]').forEach(r => {
+    const out = document.getElementById(r.dataset.out);
+    if (out) r.addEventListener('input', () => { out.textContent = r.value + (r.dataset.unit || ''); });
+  });
+}
+async function loadPdfJs() {
+  if (typeof pdfjsLib !== 'undefined') return;
+  await new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = res; s.onerror = rej; document.head.appendChild(s);
+  });
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+}
+
+// ═══════════════════════════════════════════
+// BUILD TOOL
+// ═══════════════════════════════════════════
+function buildTool(id) {
+  const body = document.getElementById('mBody');
+
+  const tools = {
+
+// ─── PDF TOOLS ────────────────────────────────────────────
+
+'merge-pdf': () => {
+  let files = [];
+  body.innerHTML = makeDZ('.pdf', true, 'Drop 2 or more PDFs') +
+    `<div class="btn-row"><button class="go" id="go">🔗 Merge & Download</button></div>
+     <div class="prog"><div class="prog-fill" id="pf"></div></div>`;
+  setupDZ(f => { files.push(...f); renderFL(files); });
+  addGoBtn(async () => {
+    if (files.length < 2) { setSt('Add at least 2 PDFs', 'er'); return; }
+    setSt('Merging…', 'inf');
+    try {
+      const { PDFDocument } = PDFLib, out = await PDFDocument.create();
+      for (let i = 0; i < files.length; i++) {
+        setProg(i / files.length * 90);
+        const src = await PDFDocument.load(await files[i].arrayBuffer());
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(p => out.addPage(p));
+      }
+      setProg(100);
+      const bytes = await out.save();
+      dlBlob(new Blob([bytes], { type: 'application/pdf' }), 'merged.pdf');
+      setSt(`✅ Merged ${files.length} PDFs (${fmtSz(bytes.length)})!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'split-pdf': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Pages', '<input type="text" id="pages" placeholder="1,3,5-8 — blank = all" class="fw">') +
+    ctrl('Mode', '<select id="mode" class="fw"><option value="single">Selected pages → 1 PDF</option><option value="each">Every page → ZIP of PDFs</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">✂️ Split & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF first', 'er'); return; }
+    try {
+      const { PDFDocument } = PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const total = src.getPageCount();
+      if (document.getElementById('mode').value === 'each') {
+        const zip = new JSZip();
+        for (let i = 0; i < total; i++) {
+          const p = await PDFDocument.create();
+          const [pg] = await p.copyPages(src, [i]);
+          p.addPage(pg);
+          zip.file(`page-${i + 1}.pdf`, await p.save());
+        }
+        dlBlob(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), 'pages.zip');
+        setSt(`✅ Split ${total} pages into ZIP!`);
+      } else {
+        const raw = document.getElementById('pages').value.trim();
+        let idx = raw ? [] : [...Array(total).keys()];
+        if (raw) raw.split(',').forEach(p => {
+          p = p.trim();
+          if (p.includes('-')) { const [a, b] = p.split('-').map(n => parseInt(n) - 1); for (let i = a; i <= Math.min(b, total - 1); i++) idx.push(i); }
+          else { const n = parseInt(p) - 1; if (n >= 0 && n < total) idx.push(n); }
+        });
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src, idx);
+        pages.forEach(p => out.addPage(p));
+        dlBlob(new Blob([await out.save()], { type: 'application/pdf' }), 'extracted.pdf');
+        setSt(`✅ Extracted ${idx.length} page(s)!`);
+      }
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'rotate-pdf': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Rotation', '<select id="deg" class="fw"><option value="90">90° Clockwise</option><option value="180">180°</option><option value="270">90° Counter-CW</option></select>') +
+    ctrl('Pages', '<input type="text" id="pages" placeholder="e.g. 1,3 — blank = all" class="fw">') +
+    `<div class="btn-row"><button class="go" id="go">🔄 Rotate & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    try {
+      const { PDFDocument, degrees } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const total = pdf.getPageCount();
+      const raw = document.getElementById('pages').value.trim();
+      let idx = raw ? [] : [...Array(total).keys()];
+      if (raw) raw.split(',').forEach(p => { const n = parseInt(p.trim()) - 1; if (n >= 0 && n < total) idx.push(n); });
+      const deg = parseInt(document.getElementById('deg').value);
+      pdf.getPages().forEach((p, i) => { if (idx.includes(i)) p.setRotation(degrees(deg)); });
+      dlBlob(new Blob([await pdf.save()], { type: 'application/pdf' }), 'rotated.pdf');
+      setSt('✅ Rotated!');
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'compress-pdf': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    '<p class="note">Optimizes object streams. Works best on image-heavy PDFs.</p>' +
+    `<div class="btn-row"><button class="go" id="go">🗜️ Compress & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    setSt('Compressing…', 'inf');
+    try {
+      const { PDFDocument } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer(), { updateMetadata: false });
+      const bytes = await pdf.save({ useObjectStreams: true, addDefaultPage: false });
+      const saved = ((1 - bytes.length / file.size) * 100).toFixed(1);
+      dlBlob(new Blob([bytes], { type: 'application/pdf' }), 'compressed.pdf');
+      setSt(`✅ ${fmtSz(file.size)} → ${fmtSz(bytes.length)} (${parseFloat(saved) > 0 ? saved + '% smaller' : 'already optimal'})!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'delete-pages': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Delete pages', '<input type="text" id="pages" placeholder="e.g. 1,3,5-8" class="fw">') +
+    `<div class="btn-row"><button class="go" id="go">🗑️ Delete & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    const raw = document.getElementById('pages').value.trim();
+    if (!raw) { setSt('Enter page numbers to delete', 'er'); return; }
+    try {
+      const { PDFDocument } = PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const total = src.getPageCount();
+      const del = new Set();
+      raw.split(',').forEach(p => {
+        p = p.trim();
+        if (p.includes('-')) { const [a, b] = p.split('-').map(n => parseInt(n) - 1); for (let i = a; i <= b; i++) del.add(i); }
+        else del.add(parseInt(p) - 1);
+      });
+      const keep = [...Array(total).keys()].filter(i => !del.has(i));
+      if (!keep.length) { setSt('Cannot delete all pages', 'er'); return; }
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, keep);
+      pages.forEach(p => out.addPage(p));
+      dlBlob(new Blob([await out.save()], { type: 'application/pdf' }), 'deleted-pages.pdf');
+      setSt(`✅ Deleted ${del.size} page(s), ${keep.length} remain!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'reorder-pages': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    '<div id="orderUI" style="display:none">' +
+    '<p class="note" id="hint"></p>' +
+    ctrl('New order', '<input type="text" id="order" placeholder="e.g. 3,1,2,4" class="fw">') +
+    `<div class="btn-row"><button class="go" id="go">↕️ Reorder & Download</button></div></div>`;
+  setupDZ(async f => {
+    file = f[0]; renderFL([file]);
+    const { PDFDocument } = PDFLib;
+    const src = await PDFDocument.load(await file.arrayBuffer());
+    const total = src.getPageCount();
+    document.getElementById('hint').textContent = `PDF has ${total} pages. Enter new order (e.g. ${[...Array(total)].map((_, i) => total - i).join(',')} to reverse).`;
+    document.getElementById('orderUI').style.display = 'block';
+    addGoBtn(async () => {
+      const raw = document.getElementById('order').value.trim();
+      if (!raw) { setSt('Enter page order', 'er'); return; }
+      try {
+        const src2 = await PDFDocument.load(await file.arrayBuffer());
+        const idx = raw.split(',').map(n => parseInt(n.trim()) - 1);
+        const out = await PDFDocument.create();
+        const pages = await out.copyPages(src2, idx);
+        pages.forEach(p => out.addPage(p));
+        dlBlob(new Blob([await out.save()], { type: 'application/pdf' }), 'reordered.pdf');
+        setSt('✅ Reordered!');
+      } catch (e) { setSt('❌ ' + e.message, 'er'); }
+    });
+  });
+},
+
+'add-blank': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('After page #', '<input type="number" id="pos" value="1" min="0"> (0 = before first)') +
+    ctrl('How many', '<input type="number" id="num" value="1" min="1" max="20">') +
+    `<div class="btn-row"><button class="go" id="go">➕ Add Blanks & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    try {
+      const { PDFDocument } = PDFLib;
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const out = await PDFDocument.create();
+      const allP = await out.copyPages(src, src.getPageIndices());
+      allP.forEach(p => out.addPage(p));
+      const pos = parseInt(document.getElementById('pos').value);
+      const num = parseInt(document.getElementById('num').value) || 1;
+      const ref = out.getPage(Math.max(0, Math.min(pos - 1, out.getPageCount() - 1)));
+      const { width, height } = ref.getSize();
+      for (let i = 0; i < num; i++) out.insertPage(pos + i, [width, height]);
+      dlBlob(new Blob([await out.save()], { type: 'application/pdf' }), 'with-blanks.pdf');
+      setSt(`✅ Added ${num} blank page(s)!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'watermark-pdf': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Text', '<input type="text" id="txt" value="CONFIDENTIAL" class="fw">') +
+    ctrl('Opacity', '<input type="range" id="op" min="5" max="80" value="20" data-out="opv" data-unit="%"><span class="val" id="opv">20%</span>') +
+    ctrl('Font size', '<input type="range" id="fs" min="12" max="150" value="60" data-out="fsv" data-unit="pt"><span class="val" id="fsv">60pt</span>') +
+    `<div class="btn-row"><button class="go" id="go">💧 Add Watermark & Download</button></div>`;
+  wireRanges();
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    try {
+      const { PDFDocument, rgb, degrees } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const font = await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+      const op = parseInt(document.getElementById('op').value) / 100;
+      const fs = parseInt(document.getElementById('fs').value);
+      const txt = document.getElementById('txt').value || 'WATERMARK';
+      pdf.getPages().forEach(page => {
+        const { width, height } = page.getSize();
+        const tw = font.widthOfTextAtSize(txt, fs);
+        page.drawText(txt, { x: (width - tw) / 2, y: (height - fs) / 2, size: fs, font, color: rgb(0.5, 0.5, 0.5), opacity: op, rotate: degrees(45) });
+      });
+      dlBlob(new Blob([await pdf.save()], { type: 'application/pdf' }), 'watermarked.pdf');
+      setSt('✅ Watermark added!');
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'page-numbers': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Position', '<select id="pos" class="fw"><option value="bc">Bottom center</option><option value="tc">Top center</option><option value="br">Bottom right</option><option value="bl">Bottom left</option></select>') +
+    ctrl('Start from', '<input type="number" id="start" value="1" min="1">') +
+    ctrl('Font size', '<input type="number" id="fs" value="12" min="6" max="36">') +
+    `<div class="btn-row"><button class="go" id="go">🔢 Add Numbers & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    try {
+      const { PDFDocument, rgb } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const font = await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+      const pos = document.getElementById('pos').value;
+      const start = parseInt(document.getElementById('start').value) || 1;
+      const fs = parseInt(document.getElementById('fs').value) || 12;
+      pdf.getPages().forEach((page, i) => {
+        const { width, height } = page.getSize();
+        const txt = String(i + start);
+        const tw = font.widthOfTextAtSize(txt, fs);
+        let x, y;
+        if (pos === 'bc') { x = (width - tw) / 2; y = 20; }
+        else if (pos === 'tc') { x = (width - tw) / 2; y = height - 30; }
+        else if (pos === 'br') { x = width - tw - 20; y = 20; }
+        else { x = 20; y = 20; }
+        page.drawText(txt, { x, y, size: fs, font, color: rgb(0.1, 0.1, 0.1) });
+      });
+      dlBlob(new Blob([await pdf.save()], { type: 'application/pdf' }), 'numbered.pdf');
+      setSt('✅ Page numbers added!');
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'pdf-crop': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    '<p class="note">Margins in PDF points (1pt ≈ 0.35mm). Positive values trim inward from each edge.</p>' +
+    ctrl('Left (pt)', '<input type="number" id="ml" value="36">') +
+    ctrl('Right (pt)', '<input type="number" id="mr" value="36">') +
+    ctrl('Top (pt)', '<input type="number" id="mt" value="36">') +
+    ctrl('Bottom (pt)', '<input type="number" id="mb" value="36">') +
+    `<div class="btn-row"><button class="go" id="go">📏 Crop & Download</button></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    try {
+      const { PDFDocument } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const ml = parseFloat(document.getElementById('ml').value) || 0;
+      const mr = parseFloat(document.getElementById('mr').value) || 0;
+      const mt = parseFloat(document.getElementById('mt').value) || 0;
+      const mb = parseFloat(document.getElementById('mb').value) || 0;
+      pdf.getPages().forEach(p => {
+        const { width, height } = p.getSize();
+        p.setCropBox(ml, mb, width - ml - mr, height - mt - mb);
+      });
+      dlBlob(new Blob([await pdf.save()], { type: 'application/pdf' }), 'cropped.pdf');
+      setSt('✅ Crop box set on all pages!');
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'pdf-info': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    `<div class="btn-row"><button class="go" id="go">ℹ️ Read Info</button></div>
+     <div class="out-box" id="ob"></div>`;
+  setupDZ(f => { file = f[0]; renderFL([file]); });
+  addGoBtn(async () => {
+    if (!file) return;
+    try {
+      const { PDFDocument } = PDFLib;
+      const pdf = await PDFDocument.load(await file.arrayBuffer());
+      const pages = pdf.getPages();
+      const el = document.getElementById('ob');
+      el.classList.add('show');
+      el.textContent = [
+        `File:    ${file.name}`,
+        `Size:    ${fmtSz(file.size)}`,
+        `Pages:   ${pdf.getPageCount()}`,
+        `Title:   ${pdf.getTitle() || '—'}`,
+        `Author:  ${pdf.getAuthor() || '—'}`,
+        `Creator: ${pdf.getCreator() || '—'}`,
+        `Created: ${pdf.getCreationDate()?.toLocaleString() || '—'}`,
+        `Page 1:  ${Math.round(pages[0].getWidth())}×${Math.round(pages[0].getHeight())} pt`,
+      ].join('\n');
+    } catch (e) { const el = document.getElementById('ob'); el.textContent = '❌ ' + e.message; el.classList.add('show'); }
+  });
+},
+
+// ─── IMAGE TOOLS ──────────────────────────────────────────
+
+'resize-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Mode', '<select id="rmode" class="fw"><option value="px">Exact pixels</option><option value="pct">Percentage</option><option value="fit">Fit within box</option></select>') +
+    '<div id="pxUI">' + ctrl('Width (px)', '<input type="number" id="rw">') + ctrl('Height (px)', '<input type="number" id="rh" placeholder="blank = auto ratio">') + '</div>' +
+    '<div id="pctUI" style="display:none">' + ctrl('Scale %', '<input type="range" id="pct" min="1" max="400" value="50" data-out="pctv" data-unit="%"><span class="val" id="pctv">50%</span>') + '</div>' +
+    '<div id="fitUI" style="display:none">' + ctrl('Max width', '<input type="number" id="fw2" value="1920">') + ctrl('Max height', '<input type="number" id="fh2" value="1080">') + '</div>' +
+    ctrl('Format', '<select id="ofmt" class="fw"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp">WebP</option></select>') +
+    ctrl('Quality', '<input type="range" id="q" min="10" max="100" value="92" data-out="qv" data-unit="%"><span class="val" id="qv">92%</span>') +
+    `<div class="btn-row"><button class="go" id="go">📐 Resize & Download</button></div>`;
+  wireRanges();
+  document.getElementById('rmode').addEventListener('change', e => {
+    const m = e.target.value;
+    document.getElementById('pxUI').style.display = m === 'px' ? '' : 'none';
+    document.getElementById('pctUI').style.display = m === 'pct' ? '' : 'none';
+    document.getElementById('fitUI').style.display = m === 'fit' ? '' : 'none';
+  });
+  setupDZ(async f => {
+    img = await loadImg(f[0]); renderFL([f[0]]);
+    setSt(`Original: ${img.width}×${img.height}px`, 'inf');
+    document.getElementById('rw').value = img.width;
+    document.getElementById('rh').value = img.height;
+  });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const mode = document.getElementById('rmode').value;
+    const fmt = document.getElementById('ofmt').value;
+    const q = parseInt(document.getElementById('q').value) / 100;
+    let w, h;
+    if (mode === 'px') {
+      w = parseInt(document.getElementById('rw').value) || img.width;
+      const rh = document.getElementById('rh').value;
+      h = rh ? parseInt(rh) : Math.round(img.height * w / img.width);
+    } else if (mode === 'pct') {
+      const p = parseInt(document.getElementById('pct').value) / 100;
+      w = Math.round(img.width * p); h = Math.round(img.height * p);
+    } else {
+      const mw = parseInt(document.getElementById('fw2').value) || 1920;
+      const mh = parseInt(document.getElementById('fh2').value) || 1080;
+      const ratio = Math.min(mw / img.width, mh / img.height, 1);
+      w = Math.round(img.width * ratio); h = Math.round(img.height * ratio);
+    }
+    const c = mkCvs(w, h); c.getContext('2d').drawImage(img, 0, 0, w, h);
+    dlBlob(await cvBlob(c, fmt, q), 'resized.' + fmt.split('/')[1]);
+    setSt(`✅ Resized to ${w}×${h}!`);
+  });
+},
+
+'compress-img': () => {
+  let imgFile = null, img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Format', '<select id="fmt" class="fw"><option value="image/jpeg">JPG (best compression)</option><option value="image/webp">WebP (modern, smaller)</option><option value="image/png">PNG (lossless)</option></select>') +
+    ctrl('Quality', '<input type="range" id="q" min="5" max="99" value="70" data-out="qv" data-unit="%"><span class="val" id="qv">70%</span>') +
+    `<div class="btn-row"><button class="go" id="go">🗜️ Compress & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { imgFile = f[0]; img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const fmt = document.getElementById('fmt').value;
+    const q = parseInt(document.getElementById('q').value) / 100;
+    const c = mkCvs(img.width, img.height); c.getContext('2d').drawImage(img, 0, 0);
+    const blob = await cvBlob(c, fmt, q);
+    dlBlob(blob, 'compressed.' + fmt.split('/')[1]);
+    setSt(`✅ ${fmtSz(imgFile.size)} → ${fmtSz(blob.size)} (${((1 - blob.size / imgFile.size) * 100).toFixed(1)}% smaller)!`);
+  });
+},
+
+'crop-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Mode', '<select id="cmode" class="fw"><option value="px">Pixel coordinates</option><option value="ratio">Aspect ratio</option></select>') +
+    '<div id="pxCrop">' + ctrl('X (left)', '<input type="number" id="cx" value="0"> px') + ctrl('Y (top)', '<input type="number" id="cy" value="0"> px') + ctrl('Width', '<input type="number" id="cw"> px') + ctrl('Height', '<input type="number" id="ch"> px') + '</div>' +
+    '<div id="ratioCrop" style="display:none">' + ctrl('Ratio', '<select id="ratio" class="fw"><option value="1:1">1:1 Square</option><option value="4:3">4:3</option><option value="16:9">16:9 Widescreen</option><option value="3:2">3:2</option><option value="9:16">9:16 Portrait/Stories</option></select>') + '</div>' +
+    `<div class="btn-row"><button class="go" id="go">✂️ Crop & Download (PNG)</button></div>`;
+  document.getElementById('cmode').addEventListener('change', e => {
+    document.getElementById('pxCrop').style.display = e.target.value === 'px' ? '' : 'none';
+    document.getElementById('ratioCrop').style.display = e.target.value === 'ratio' ? '' : 'none';
+  });
+  setupDZ(async f => {
+    img = await loadImg(f[0]); renderFL([f[0]]);
+    document.getElementById('cw').value = img.width;
+    document.getElementById('ch').value = img.height;
+    setSt(`Image: ${img.width}×${img.height}px`, 'inf');
+  });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    let x, y, w, h;
+    if (document.getElementById('cmode').value === 'px') {
+      x = parseInt(document.getElementById('cx').value) || 0;
+      y = parseInt(document.getElementById('cy').value) || 0;
+      w = parseInt(document.getElementById('cw').value) || img.width;
+      h = parseInt(document.getElementById('ch').value) || img.height;
+    } else {
+      const [rw, rh] = document.getElementById('ratio').value.split(':').map(Number);
+      const tR = rw / rh, iR = img.width / img.height;
+      if (tR > iR) { w = img.width; h = Math.round(w / tR); } else { h = img.height; w = Math.round(h * tR); }
+      x = Math.floor((img.width - w) / 2); y = Math.floor((img.height - h) / 2);
+    }
+    const c = mkCvs(w, h); c.getContext('2d').drawImage(img, x, y, w, h, 0, 0, w, h);
+    dlBlob(await cvBlob(c, 'image/png', 1), 'cropped.png');
+    setSt(`✅ Cropped to ${w}×${h}!`);
+  });
+},
+
+'rotate-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Action', '<select id="rot" class="fw"><option value="90cw">90° Clockwise</option><option value="90ccw">90° Counter-CW</option><option value="180">180°</option><option value="fh">Flip Horizontal</option><option value="fv">Flip Vertical</option><option value="custom">Custom angle</option></select>') +
+    '<div id="customUI" style="display:none">' + ctrl('Angle °', '<input type="number" id="angle" value="45">') + '</div>' +
+    `<div class="btn-row"><button class="go" id="go">🔄 Apply & Download (PNG)</button></div>`;
+  document.getElementById('rot').addEventListener('change', e => {
+    document.getElementById('customUI').style.display = e.target.value === 'custom' ? '' : 'none';
+  });
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const rot = document.getElementById('rot').value, w = img.width, h = img.height;
+    let c, ctx;
+    if (rot === 'fh') { c = mkCvs(w, h); ctx = c.getContext('2d'); ctx.scale(-1, 1); ctx.drawImage(img, -w, 0); }
+    else if (rot === 'fv') { c = mkCvs(w, h); ctx = c.getContext('2d'); ctx.scale(1, -1); ctx.drawImage(img, 0, -h); }
+    else if (rot === '90cw') { c = mkCvs(h, w); ctx = c.getContext('2d'); ctx.translate(h / 2, w / 2); ctx.rotate(Math.PI / 2); ctx.drawImage(img, -w / 2, -h / 2); }
+    else if (rot === '90ccw') { c = mkCvs(h, w); ctx = c.getContext('2d'); ctx.translate(h / 2, w / 2); ctx.rotate(-Math.PI / 2); ctx.drawImage(img, -w / 2, -h / 2); }
+    else if (rot === '180') { c = mkCvs(w, h); ctx = c.getContext('2d'); ctx.translate(w / 2, h / 2); ctx.rotate(Math.PI); ctx.drawImage(img, -w / 2, -h / 2); }
+    else {
+      const a = parseFloat(document.getElementById('angle').value) * Math.PI / 180;
+      const nw = Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a));
+      const nh = Math.abs(w * Math.sin(a)) + Math.abs(h * Math.cos(a));
+      c = mkCvs(Math.ceil(nw), Math.ceil(nh)); ctx = c.getContext('2d');
+      ctx.translate(nw / 2, nh / 2); ctx.rotate(a); ctx.drawImage(img, -w / 2, -h / 2);
+    }
+    dlBlob(await cvBlob(c, 'image/png', 1), 'rotated.png');
+    setSt('✅ Done!');
+  });
+},
+
+'grayscale-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Mode', '<select id="m" class="fw"><option value="gray">Grayscale</option><option value="bw">High-contrast B&W</option><option value="sepia">Sepia tone</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">⬛ Convert & Download</button></div>`;
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const m = document.getElementById('m').value;
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    if (m === 'gray') { ctx.filter = 'grayscale(100%)'; ctx.drawImage(img, 0, 0); }
+    else if (m === 'bw') { ctx.filter = 'grayscale(100%) contrast(200%)'; ctx.drawImage(img, 0, 0); }
+    else {
+      ctx.drawImage(img, 0, 0);
+      const d = ctx.getImageData(0, 0, c.width, c.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        const g = 0.299 * d.data[i] + 0.587 * d.data[i + 1] + 0.114 * d.data[i + 2];
+        d.data[i] = Math.min(255, g + 112); d.data[i + 1] = Math.min(255, g + 66); d.data[i + 2] = Math.min(255, g + 20);
+      }
+      ctx.putImageData(d, 0, 0);
+    }
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.92), 'grayscale.jpg');
+    setSt('✅ Converted!');
+  });
+},
+
+'blur-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Blur radius', '<input type="range" id="r" min="1" max="60" value="8" data-out="rv" data-unit="px"><span class="val" id="rv">8px</span>') +
+    `<div class="btn-row"><button class="go" id="go">🌫️ Blur & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.filter = `blur(${document.getElementById('r').value}px)`;
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.92), 'blurred.jpg');
+    setSt('✅ Blurred!');
+  });
+},
+
+'sharpen-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Strength', '<input type="range" id="s" min="1" max="10" value="3" data-out="sv"><span class="val" id="sv">3</span>') +
+    `<div class="btn-row"><button class="go" id="go">🔪 Sharpen & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const s = parseInt(document.getElementById('s').value);
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const id = ctx.getImageData(0, 0, c.width, c.height), d = id.data, W = c.width, H = c.height;
+    const out = new Uint8ClampedArray(d), k = [-1, -1, -1, -1, 8 + s, -1, -1, -1, -1];
+    for (let y = 1; y < H - 1; y++) {
+      for (let x = 1; x < W - 1; x++) {
+        let r = 0, g = 0, b = 0;
+        for (let ky = -1; ky <= 1; ky++) for (let kx = -1; kx <= 1; kx++) {
+          const i = ((y + ky) * W + (x + kx)) * 4, ki = (ky + 1) * 3 + (kx + 1);
+          r += d[i] * k[ki]; g += d[i + 1] * k[ki]; b += d[i + 2] * k[ki];
+        }
+        const i = (y * W + x) * 4;
+        out[i] = Math.max(0, Math.min(255, r)); out[i + 1] = Math.max(0, Math.min(255, g));
+        out[i + 2] = Math.max(0, Math.min(255, b)); out[i + 3] = d[i + 3];
+      }
+    }
+    ctx.putImageData(new ImageData(out, W, H), 0, 0);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.95), 'sharpened.jpg');
+    setSt('✅ Sharpened!');
+  });
+},
+
+'brightness-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Brightness', '<input type="range" id="br" min="0" max="300" value="100" data-out="brv" data-unit="%"><span class="val" id="brv">100%</span>') +
+    ctrl('Contrast', '<input type="range" id="co" min="0" max="300" value="100" data-out="cov" data-unit="%"><span class="val" id="cov">100%</span>') +
+    ctrl('Saturation', '<input type="range" id="sa" min="0" max="300" value="100" data-out="sav" data-unit="%"><span class="val" id="sav">100%</span>') +
+    `<div class="btn-row"><button class="go" id="go">☀️ Apply & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.filter = `brightness(${document.getElementById('br').value}%) contrast(${document.getElementById('co').value}%) saturate(${document.getElementById('sa').value}%)`;
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.93), 'adjusted.jpg');
+    setSt('✅ Applied!');
+  });
+},
+
+'hue-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Hue rotate', '<input type="range" id="hue" min="0" max="360" value="0" data-out="huev" data-unit="°"><span class="val" id="huev">0°</span>') +
+    ctrl('Sepia', '<input type="range" id="sep" min="0" max="100" value="0" data-out="sepv" data-unit="%"><span class="val" id="sepv">0%</span>') +
+    ctrl('Warmth', '<input type="range" id="warm" min="-50" max="50" value="0" data-out="warmv"><span class="val" id="warmv">0</span>') +
+    `<div class="btn-row"><button class="go" id="go">🌈 Apply & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.filter = `hue-rotate(${document.getElementById('hue').value}deg) sepia(${document.getElementById('sep').value}%)`;
+    ctx.drawImage(img, 0, 0);
+    const warm = parseInt(document.getElementById('warm').value);
+    if (warm !== 0) {
+      const d = ctx.getImageData(0, 0, c.width, c.height);
+      for (let i = 0; i < d.data.length; i += 4) {
+        d.data[i] = Math.min(255, Math.max(0, d.data[i] + warm));
+        d.data[i + 2] = Math.min(255, Math.max(0, d.data[i + 2] - warm));
+      }
+      ctx.putImageData(d, 0, 0);
+    }
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.92), 'toned.jpg');
+    setSt('✅ Applied!');
+  });
+},
+
+'invert-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Amount', '<input type="range" id="inv" min="0" max="100" value="100" data-out="invv" data-unit="%"><span class="val" id="invv">100%</span>') +
+    `<div class="btn-row"><button class="go" id="go">🔃 Invert & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.filter = `invert(${document.getElementById('inv').value}%)`;
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/png', 1), 'inverted.png');
+    setSt('✅ Inverted!');
+  });
+},
+
+'add-text-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Text', '<input type="text" id="txt" value="Hello!" class="fw">') +
+    ctrl('Font size', '<input type="range" id="fs" min="8" max="300" value="60" data-out="fsv" data-unit="px"><span class="val" id="fsv">60px</span>') +
+    ctrl('Color', '<input type="color" id="col" value="#ffffff">') +
+    ctrl('Outline width', '<input type="range" id="sw" min="0" max="20" value="2" data-out="swv" data-unit="px"><span class="val" id="swv">2px</span>') +
+    ctrl('Outline color', '<input type="color" id="stk" value="#000000">') +
+    ctrl('X (px)', '<input type="number" id="tx" value="20">') +
+    ctrl('Y (px)', '<input type="number" id="ty" value="60">') +
+    ctrl('Align', '<select id="align" class="fw"><option value="left">Left</option><option value="center">Center</option><option value="right">Right</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">🅰️ Add Text & Download (PNG)</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); document.getElementById('ty').value = Math.round(img.height * 0.1); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const fs = parseInt(document.getElementById('fs').value);
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    ctx.font = `bold ${fs}px sans-serif`;
+    ctx.textAlign = document.getElementById('align').value;
+    const sw = parseInt(document.getElementById('sw').value);
+    const x = parseInt(document.getElementById('tx').value);
+    const y = parseInt(document.getElementById('ty').value);
+    const txt = document.getElementById('txt').value;
+    if (sw > 0) { ctx.strokeStyle = document.getElementById('stk').value; ctx.lineWidth = sw; ctx.strokeText(txt, x, y); }
+    ctx.fillStyle = document.getElementById('col').value;
+    ctx.fillText(txt, x, y);
+    dlBlob(await cvBlob(c, 'image/png', 1), 'text-overlay.png');
+    setSt('✅ Text added!');
+  });
+},
+
+'watermark-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Text', '<input type="text" id="txt" value="© My Photo" class="fw">') +
+    ctrl('Opacity', '<input type="range" id="op" min="5" max="90" value="30" data-out="opv" data-unit="%"><span class="val" id="opv">30%</span>') +
+    ctrl('Color', '<input type="color" id="col" value="#ffffff">') +
+    ctrl('Pattern', '<select id="pat" class="fw"><option value="diag">Diagonal tiled</option><option value="center">Center once</option><option value="br">Bottom-right</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">💧 Watermark & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const op = parseInt(document.getElementById('op').value) / 100;
+    const col = document.getElementById('col').value;
+    const txt = document.getElementById('txt').value;
+    const pat = document.getElementById('pat').value;
+    const fs = Math.max(14, Math.round(Math.min(img.width, img.height) * 0.055));
+    ctx.globalAlpha = op; ctx.fillStyle = col; ctx.font = `bold ${fs}px sans-serif`;
+    if (pat === 'diag') {
+      for (let y = -img.height; y < img.height * 2; y += fs * 3)
+        for (let x = -img.width; x < img.width * 2; x += fs * 8) {
+          ctx.save(); ctx.translate(x, y); ctx.rotate(-Math.PI / 6); ctx.fillText(txt, 0, 0); ctx.restore();
+        }
+    } else if (pat === 'center') {
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.save(); ctx.translate(img.width / 2, img.height / 2); ctx.rotate(-Math.PI / 6);
+      ctx.font = `bold ${fs * 2}px sans-serif`; ctx.fillText(txt, 0, 0); ctx.restore();
+    } else {
+      ctx.textAlign = 'right'; ctx.fillText(txt, img.width - 20, img.height - 20);
+    }
+    ctx.globalAlpha = 1;
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.92), 'watermarked.jpg');
+    setSt('✅ Watermark added!');
+  });
+},
+
+'border-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Border width', '<input type="range" id="bw" min="1" max="200" value="20" data-out="bwv" data-unit="px"><span class="val" id="bwv">20px</span>') +
+    ctrl('Color', '<input type="color" id="col" value="#000000">') +
+    `<div class="btn-row"><button class="go" id="go">🖼️ Add Border & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const bw = parseInt(document.getElementById('bw').value);
+    const c = mkCvs(img.width + bw * 2, img.height + bw * 2), ctx = c.getContext('2d');
+    ctx.fillStyle = document.getElementById('col').value;
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, bw, bw);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.94), 'bordered.jpg');
+    setSt('✅ Border added!');
+  });
+},
+
+'round-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Shape', '<select id="shape" class="fw"><option value="custom">Custom radius</option><option value="circle">Full circle</option></select>') +
+    ctrl('Radius', '<input type="range" id="r" min="0" max="50" value="10" data-out="rv" data-unit="%"><span class="val" id="rv">10%</span>') +
+    `<div class="btn-row"><button class="go" id="go">⭕ Round & Download (PNG)</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const shape = document.getElementById('shape').value;
+    const pct = parseInt(document.getElementById('r').value) / 100;
+    const w = img.width, h = img.height;
+    const rad = shape === 'circle' ? Math.min(w, h) / 2 : Math.min(w, h) * pct;
+    const c = mkCvs(w, h), ctx = c.getContext('2d');
+    ctx.beginPath();
+    if (shape === 'circle') { ctx.arc(w / 2, h / 2, rad, 0, Math.PI * 2); }
+    else {
+      ctx.moveTo(rad, 0); ctx.lineTo(w - rad, 0); ctx.quadraticCurveTo(w, 0, w, rad);
+      ctx.lineTo(w, h - rad); ctx.quadraticCurveTo(w, h, w - rad, h);
+      ctx.lineTo(rad, h); ctx.quadraticCurveTo(0, h, 0, h - rad);
+      ctx.lineTo(0, rad); ctx.quadraticCurveTo(0, 0, rad, 0);
+    }
+    ctx.closePath(); ctx.clip(); ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/png', 1), 'rounded.png');
+    setSt('✅ Rounded!');
+  });
+},
+
+'collage-img': () => {
+  let imgs = [];
+  body.innerHTML = makeDZ('image/*', true, 'Drop 2–4 images') +
+    ctrl('Layout', '<select id="layout" class="fw"><option value="h">Side by side (horizontal)</option><option value="v">Stacked (vertical)</option><option value="grid">2×2 grid</option></select>') +
+    ctrl('Gap (px)', '<input type="number" id="gap" value="8" min="0">') +
+    ctrl('BG color', '<input type="color" id="bg" value="#ffffff">') +
+    ctrl('Format', '<select id="fmt" class="fw"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">🗃️ Create Collage & Download</button></div>`;
+  setupDZ(async f => { for (const file of f) imgs.push(await loadImg(file)); renderFL(f); setSt(`${imgs.length} images loaded`, 'inf'); });
+  addGoBtn(async () => {
+    if (imgs.length < 2) { setSt('Add at least 2 images', 'er'); return; }
+    const layout = document.getElementById('layout').value;
+    const gap = parseInt(document.getElementById('gap').value) || 0;
+    const bg = document.getElementById('bg').value;
+    const fmt = document.getElementById('fmt').value;
+    const norm = (list, th) => list.map(i => ({ img: i, w: Math.round(i.width * (th / i.height)), h: th }));
+    let c, ctx;
+    if (layout === 'h') {
+      const h = Math.max(...imgs.map(i => i.height)), items = norm(imgs, h);
+      const tw = items.reduce((a, b) => a + b.w, 0) + (imgs.length - 1) * gap;
+      c = mkCvs(tw, h); ctx = c.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, tw, h);
+      let x = 0; items.forEach(({ img, w }) => { ctx.drawImage(img, x, 0, w, h); x += w + gap; });
+    } else if (layout === 'v') {
+      const w = Math.max(...imgs.map(i => i.width));
+      const items = imgs.map(i => ({ img: i, h: Math.round(i.height * (w / i.width)), w }));
+      const th = items.reduce((a, b) => a + b.h, 0) + (imgs.length - 1) * gap;
+      c = mkCvs(w, th); ctx = c.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, w, th);
+      let y = 0; items.forEach(({ img, h }) => { ctx.drawImage(img, 0, y, w, h); y += h + gap; });
+    } else {
+      const h = Math.max(imgs[0]?.height || 200, imgs[1]?.height || 200);
+      const items = norm(imgs.slice(0, 4), h);
+      const tw = Math.max((items[0]?.w || 0) + (items[1]?.w || 0) + gap, (items[2]?.w || 0) + (items[3]?.w || 0) + gap);
+      c = mkCvs(tw, h * 2 + gap); ctx = c.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, tw, h * 2 + gap);
+      if (items[0]) ctx.drawImage(items[0].img, 0, 0, items[0].w, h);
+      if (items[1]) ctx.drawImage(items[1].img, (items[0]?.w || 0) + gap, 0, items[1].w, h);
+      if (items[2]) ctx.drawImage(items[2].img, 0, h + gap, items[2].w, h);
+      if (items[3]) ctx.drawImage(items[3].img, (items[2]?.w || 0) + gap, h + gap, items[3].w, h);
+    }
+    dlBlob(await cvBlob(c, fmt, 0.93), 'collage.' + fmt.split('/')[1]);
+    setSt('✅ Collage created!');
+  });
+},
+
+'split-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Split into', '<select id="grid" class="fw"><option value="2x1">2 columns</option><option value="1x2">2 rows</option><option value="2x2">2×2 (4 tiles)</option><option value="3x3">3×3 (9 tiles)</option><option value="4x4">4×4 (16 tiles)</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">⊞ Split & Download ZIP</button></div>`;
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); setSt(`${img.width}×${img.height}px`, 'inf'); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const [cols, rows] = document.getElementById('grid').value.split('x').map(Number);
+    const tw = Math.floor(img.width / cols), th = Math.floor(img.height / rows);
+    const zip = new JSZip();
+    for (let r = 0; r < rows; r++)
+      for (let cc = 0; cc < cols; cc++) {
+        const cv = mkCvs(tw, th);
+        cv.getContext('2d').drawImage(img, cc * tw, r * th, tw, th, 0, 0, tw, th);
+        zip.file(`tile-r${r + 1}-c${cc + 1}.png`, await (await cvBlob(cv, 'image/png', 1)).arrayBuffer());
+      }
+    dlBlob(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), 'tiles.zip');
+    setSt(`✅ Split into ${cols * rows} tiles!`);
+  });
+},
+
+'pixelate-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Block size', '<input type="range" id="px" min="2" max="80" value="16" data-out="pxv" data-unit="px"><span class="val" id="pxv">16px</span>') +
+    `<div class="btn-row"><button class="go" id="go">🟦 Pixelate & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const px = parseInt(document.getElementById('px').value);
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    const sw = Math.ceil(img.width / px), sh = Math.ceil(img.height / px);
+    const tmp = mkCvs(sw, sh); tmp.getContext('2d').drawImage(img, 0, 0, sw, sh);
+    ctx.drawImage(tmp, 0, 0, sw, sh, 0, 0, img.width, img.height);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.92), 'pixelated.jpg');
+    setSt('✅ Pixelated!');
+  });
+},
+
+'vignette-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Strength', '<input type="range" id="str" min="0" max="100" value="50" data-out="strv" data-unit="%"><span class="val" id="strv">50%</span>') +
+    ctrl('Color', '<input type="color" id="col" value="#000000">') +
+    `<div class="btn-row"><button class="go" id="go">🌑 Apply & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const str = parseInt(document.getElementById('str').value) / 100;
+    const col = document.getElementById('col').value;
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const gr = ctx.createRadialGradient(img.width / 2, img.height / 2, img.width * 0.3, img.width / 2, img.height / 2, img.width * 0.85);
+    gr.addColorStop(0, 'transparent');
+    gr.addColorStop(1, col + Math.round(str * 255).toString(16).padStart(2, '0'));
+    ctx.fillStyle = gr; ctx.fillRect(0, 0, img.width, img.height);
+    dlBlob(await cvBlob(c, 'image/jpeg', 0.93), 'vignette.jpg');
+    setSt('✅ Vignette applied!');
+  });
+},
+
+'bg-color-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/png,image/webp') +
+    '<p class="note">Best for PNG images with transparency.</p>' +
+    ctrl('BG color', '<input type="color" id="bg" value="#ffffff">') +
+    ctrl('Output format', '<select id="fmt" class="fw"><option value="image/jpeg">JPG (flattened)</option><option value="image/png">PNG</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">🎨 Add BG & Download</button></div>`;
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop a PNG/WebP', 'er'); return; }
+    const fmt = document.getElementById('fmt').value;
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.fillStyle = document.getElementById('bg').value;
+    ctx.fillRect(0, 0, img.width, img.height);
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, fmt, 0.94), 'with-bg.' + fmt.split('/')[1]);
+    setSt('✅ Background added!');
+  });
+},
+
+'strip-exif': () => {
+  let file = null;
+  body.innerHTML = makeDZ('image/jpeg') +
+    '<p class="note">Removes GPS location, camera model and timestamps by re-encoding via canvas.</p>' +
+    `<div class="btn-row"><button class="go" id="go">🧹 Strip EXIF & Download</button></div>`;
+  setupDZ(async f => { file = f[0]; renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a JPEG', 'er'); return; }
+    const img = await loadImg(file);
+    const c = mkCvs(img.width, img.height); c.getContext('2d').drawImage(img, 0, 0);
+    const blob = await cvBlob(c, 'image/jpeg', 0.95);
+    dlBlob(blob, 'no-exif.jpg');
+    setSt(`✅ EXIF stripped! ${fmtSz(file.size)} → ${fmtSz(blob.size)}`);
+  });
+},
+
+'opacity-img': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/*') +
+    ctrl('Opacity', '<input type="range" id="op" min="5" max="100" value="70" data-out="opv" data-unit="%"><span class="val" id="opv">70%</span>') +
+    `<div class="btn-row"><button class="go" id="go">👁️ Apply & Download (PNG)</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.globalAlpha = parseInt(document.getElementById('op').value) / 100;
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/png', 1), 'opacity.png');
+    setSt('✅ Opacity applied!');
+  });
+},
+
+// ─── CONVERSION TOOLS ─────────────────────────────────────
+
+'img-to-pdf': () => {
+  let files = [];
+  body.innerHTML = makeDZ('image/*', true, 'Drop JPG / PNG / WebP images') +
+    ctrl('Page size', '<select id="pgsz" class="fw"><option value="img">Match image size</option><option value="a4">A4 Portrait</option><option value="a4l">A4 Landscape</option><option value="letter">US Letter</option></select>') +
+    ctrl('Margin (pt)', '<input type="number" id="margin" value="0" min="0" max="100">') +
+    `<div class="btn-row"><button class="go" id="go">🖼️ Convert to PDF & Download</button></div>
+     <div class="prog"><div class="prog-fill" id="pf"></div></div>`;
+  setupDZ(f => { files.push(...f); renderFL(files); });
+  addGoBtn(async () => {
+    if (!files.length) { setSt('Add images first', 'er'); return; }
+    setSt('Converting…', 'inf');
+    try {
+      const { PDFDocument } = PDFLib, pdf = await PDFDocument.create();
+      const sizes = { a4: [595.28, 841.89], a4l: [841.89, 595.28], letter: [612, 792] };
+      const pgsz = document.getElementById('pgsz').value;
+      const margin = parseInt(document.getElementById('margin').value) || 0;
+      for (let i = 0; i < files.length; i++) {
+        setProg(i / files.length * 90);
+        const f = files[i], buf = await f.arrayBuffer();
+        let emb;
+        try { emb = await pdf.embedJpg(buf); }
+        catch {
+          const blob = await new Promise(res => {
+            const im = new Image();
+            im.onload = () => { const cv = mkCvs(im.width, im.height); cv.getContext('2d').drawImage(im, 0, 0); cv.toBlob(res, 'image/png'); };
+            im.src = URL.createObjectURL(new Blob([buf], { type: f.type }));
+          });
+          emb = await pdf.embedPng(await blob.arrayBuffer());
+        }
+        let pw, ph;
+        if (pgsz === 'img') { pw = emb.width; ph = emb.height; } else { [pw, ph] = sizes[pgsz]; }
+        const page = pdf.addPage([pw, ph]);
+        const scale = Math.min((pw - margin * 2) / emb.width, (ph - margin * 2) / emb.height);
+        const iw = emb.width * scale, ih = emb.height * scale;
+        page.drawImage(emb, { x: (pw - iw) / 2, y: (ph - ih) / 2, width: iw, height: ih });
+      }
+      setProg(100);
+      const bytes = await pdf.save();
+      dlBlob(new Blob([bytes], { type: 'application/pdf' }), 'images.pdf');
+      setSt(`✅ ${files.length} image(s) → PDF (${fmtSz(bytes.length)})!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'pdf-to-jpg': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    '<p class="note">Uses PDF.js renderer. Needs internet to load the library on first use.</p>' +
+    ctrl('Resolution', '<input type="range" id="scale" min="0.5" max="4" step="0.25" value="2" data-out="scalev" data-unit="×"><span class="val" id="scalev">2×</span>') +
+    `<div class="btn-row"><button class="go" id="go">📄 Convert to JPG ZIP</button></div>
+     <div class="prog"><div class="prog-fill" id="pf"></div></div>`;
+  wireRanges();
+  setupDZ(f => { file = f[0]; renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    setSt('Loading PDF.js…', 'inf');
+    try {
+      await loadPdfJs();
+      const scale = parseFloat(document.getElementById('scale').value);
+      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      const zip = new JSZip();
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setProg(i / pdf.numPages * 95);
+        const page = await pdf.getPage(i), vp = page.getViewport({ scale });
+        const c = mkCvs(vp.width, vp.height);
+        await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+        zip.file(`page-${String(i).padStart(3, '0')}.jpg`, await (await cvBlob(c, 'image/jpeg', 0.94)).arrayBuffer());
+      }
+      setProg(100);
+      dlBlob(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), 'pdf-jpg.zip');
+      setSt(`✅ ${pdf.numPages} page(s) → JPG ZIP!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'pdf-to-png': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    '<p class="note">Uses PDF.js renderer. Needs internet to load the library on first use.</p>' +
+    ctrl('Resolution', '<input type="range" id="scale" min="0.5" max="4" step="0.25" value="2" data-out="scalev" data-unit="×"><span class="val" id="scalev">2×</span>') +
+    `<div class="btn-row"><button class="go" id="go">📄 Convert to PNG ZIP</button></div>
+     <div class="prog"><div class="prog-fill" id="pf"></div></div>`;
+  wireRanges();
+  setupDZ(f => { file = f[0]; renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    setSt('Loading PDF.js…', 'inf');
+    try {
+      await loadPdfJs();
+      const scale = parseFloat(document.getElementById('scale').value);
+      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      const zip = new JSZip();
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setProg(i / pdf.numPages * 95);
+        const page = await pdf.getPage(i), vp = page.getViewport({ scale });
+        const c = mkCvs(vp.width, vp.height);
+        await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+        zip.file(`page-${String(i).padStart(3, '0')}.png`, await (await cvBlob(c, 'image/png', 1)).arrayBuffer());
+      }
+      setProg(100);
+      dlBlob(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), 'pdf-png.zip');
+      setSt(`✅ ${pdf.numPages} page(s) → PNG ZIP!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+'jpg-to-png': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/jpeg,image/jpg') +
+    `<div class="btn-row"><button class="go" id="go">🔀 JPG → PNG & Download</button></div>`;
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); setSt(`${img.width}×${img.height}px`, 'inf'); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop a JPG', 'er'); return; }
+    const c = mkCvs(img.width, img.height); c.getContext('2d').drawImage(img, 0, 0);
+    const blob = await cvBlob(c, 'image/png', 1);
+    dlBlob(blob, 'converted.png');
+    setSt(`✅ PNG saved (${fmtSz(blob.size)})!`);
+  });
+},
+
+'png-to-jpg': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/png,image/webp') +
+    ctrl('BG color', '<input type="color" id="bg" value="#ffffff">') +
+    ctrl('Quality', '<input type="range" id="q" min="10" max="100" value="92" data-out="qv" data-unit="%"><span class="val" id="qv">92%</span>') +
+    `<div class="btn-row"><button class="go" id="go">🔀 PNG → JPG & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop a PNG', 'er'); return; }
+    const q = parseInt(document.getElementById('q').value) / 100;
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.fillStyle = document.getElementById('bg').value;
+    ctx.fillRect(0, 0, img.width, img.height);
+    ctx.drawImage(img, 0, 0);
+    const blob = await cvBlob(c, 'image/jpeg', q);
+    dlBlob(blob, 'converted.jpg');
+    setSt(`✅ JPG saved (${fmtSz(blob.size)})!`);
+  });
+},
+
+'webp-to-jpg': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/webp') +
+    ctrl('BG color', '<input type="color" id="bg" value="#ffffff">') +
+    ctrl('Quality', '<input type="range" id="q" min="10" max="100" value="90" data-out="qv" data-unit="%"><span class="val" id="qv">90%</span>') +
+    `<div class="btn-row"><button class="go" id="go">🔀 WebP → JPG & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop a WebP image', 'er'); return; }
+    const q = parseInt(document.getElementById('q').value) / 100;
+    const c = mkCvs(img.width, img.height), ctx = c.getContext('2d');
+    ctx.fillStyle = document.getElementById('bg').value;
+    ctx.fillRect(0, 0, img.width, img.height);
+    ctx.drawImage(img, 0, 0);
+    dlBlob(await cvBlob(c, 'image/jpeg', q), 'converted.jpg');
+    setSt('✅ JPG saved!');
+  });
+},
+
+'jpg-to-webp': () => {
+  let img = null;
+  body.innerHTML = makeDZ('image/jpeg,image/png') +
+    ctrl('Quality', '<input type="range" id="q" min="10" max="100" value="85" data-out="qv" data-unit="%"><span class="val" id="qv">85%</span>') +
+    `<div class="btn-row"><button class="go" id="go">🔀 Convert to WebP & Download</button></div>`;
+  wireRanges();
+  setupDZ(async f => { img = await loadImg(f[0]); renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!img) { setSt('Drop an image', 'er'); return; }
+    const q = parseInt(document.getElementById('q').value) / 100;
+    const c = mkCvs(img.width, img.height); c.getContext('2d').drawImage(img, 0, 0);
+    const blob = await cvBlob(c, 'image/webp', q);
+    dlBlob(blob, 'converted.webp');
+    setSt(`✅ WebP saved (${fmtSz(blob.size)})!`);
+  });
+},
+
+'merge-imgs': () => {
+  let imgs = [];
+  body.innerHTML = makeDZ('image/*', true, 'Drop 2 or more images') +
+    ctrl('Arrangement', '<select id="arr" class="fw"><option value="h">Side by side</option><option value="v">Stacked vertically</option></select>') +
+    ctrl('Gap (px)', '<input type="number" id="gap" value="0" min="0">') +
+    ctrl('BG color', '<input type="color" id="bg" value="#ffffff">') +
+    ctrl('Save as', '<select id="out" class="fw"><option value="jpg">JPG Image</option><option value="png">PNG Image</option><option value="pdf">PDF Document</option></select>') +
+    `<div class="btn-row"><button class="go" id="go">🔗 Merge & Download</button></div>`;
+  setupDZ(async f => { for (const file of f) imgs.push(await loadImg(file)); renderFL(f); setSt(`${imgs.length} images loaded`, 'inf'); });
+  addGoBtn(async () => {
+    if (imgs.length < 2) { setSt('Add at least 2 images', 'er'); return; }
+    const arr = document.getElementById('arr').value;
+    const gap = parseInt(document.getElementById('gap').value) || 0;
+    const bg = document.getElementById('bg').value;
+    const out = document.getElementById('out').value;
+    let c, ctx;
+    if (arr === 'h') {
+      const h = Math.max(...imgs.map(i => i.height));
+      const items = imgs.map(i => ({ img: i, w: Math.round(i.width * (h / i.height)), h }));
+      const tw = items.reduce((a, b) => a + b.w, 0) + (imgs.length - 1) * gap;
+      c = mkCvs(tw, h); ctx = c.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, tw, h);
+      let x = 0; items.forEach(({ img, w }) => { ctx.drawImage(img, x, 0, w, h); x += w + gap; });
+    } else {
+      const w = Math.max(...imgs.map(i => i.width));
+      const items = imgs.map(i => ({ img: i, h: Math.round(i.height * (w / i.width)), w }));
+      const th = items.reduce((a, b) => a + b.h, 0) + (imgs.length - 1) * gap;
+      c = mkCvs(w, th); ctx = c.getContext('2d'); ctx.fillStyle = bg; ctx.fillRect(0, 0, w, th);
+      let y = 0; items.forEach(({ img, h }) => { ctx.drawImage(img, 0, y, w, h); y += h + gap; });
+    }
+    if (out === 'pdf') {
+      const { PDFDocument } = PDFLib, pdf = await PDFDocument.create();
+      const blob = await cvBlob(c, 'image/png', 1);
+      const emb = await pdf.embedPng(await blob.arrayBuffer());
+      const page = pdf.addPage([emb.width, emb.height]);
+      page.drawImage(emb, { x: 0, y: 0, width: emb.width, height: emb.height });
+      dlBlob(new Blob([await pdf.save()], { type: 'application/pdf' }), 'merged.pdf');
+    } else {
+      dlBlob(await cvBlob(c, 'image/' + out, 0.93), 'merged.' + out);
+    }
+    setSt('✅ Merged & downloaded!');
+  });
+},
+
+'pdf-pages-zip': () => {
+  let file = null;
+  body.innerHTML = makeDZ('.pdf') +
+    ctrl('Image format', '<select id="fmt" class="fw"><option value="jpg">JPG</option><option value="png">PNG</option></select>') +
+    ctrl('Resolution', '<input type="range" id="scale" min="0.5" max="4" step="0.25" value="2" data-out="scalev" data-unit="×"><span class="val" id="scalev">2×</span>') +
+    `<div class="btn-row"><button class="go" id="go">📦 Extract All Pages → ZIP</button></div>
+     <div class="prog"><div class="prog-fill" id="pf"></div></div>`;
+  wireRanges();
+  setupDZ(f => { file = f[0]; renderFL([f[0]]); });
+  addGoBtn(async () => {
+    if (!file) { setSt('Drop a PDF', 'er'); return; }
+    setSt('Loading PDF.js…', 'inf');
+    try {
+      await loadPdfJs();
+      const fmt = document.getElementById('fmt').value;
+      const scale = parseFloat(document.getElementById('scale').value);
+      const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+      const zip = new JSZip();
+      for (let i = 1; i <= pdf.numPages; i++) {
+        setProg(i / pdf.numPages * 95);
+        const page = await pdf.getPage(i), vp = page.getViewport({ scale });
+        const c = mkCvs(vp.width, vp.height);
+        await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+        const type = 'image/' + fmt;
+        zip.file(`page-${String(i).padStart(3, '0')}.${fmt}`, await (await cvBlob(c, type, 0.94)).arrayBuffer());
+      }
+      setProg(100);
+      dlBlob(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), 'pdf-pages.zip');
+      setSt(`✅ ${pdf.numPages} pages extracted to ZIP!`);
+    } catch (e) { setSt('❌ ' + e.message, 'er'); }
+  });
+},
+
+  }; // end tools
+
+  if (tools[id]) tools[id]();
+  else body.innerHTML = '<div class="status show inf">This tool is coming soon!</div>';
+}
+</script>
+</body>
+</html>
