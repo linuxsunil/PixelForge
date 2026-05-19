@@ -12,7 +12,7 @@ Stop paying for premium PDF editors or uploading sensitive corporate data to thi
 ---
 
 ## 🚀 Live Demo / Web Access
-**[Launch the Tool Here](https://linuxsunil.github.io/PixelForge/)** *(Note: Replace with your actual GitHub Pages URL once enabled in repository settings!)*
+**[Launch the Tool Here](https://linuxsunil.github.io/PixelForge/)** 
 
 ---
 
@@ -61,10 +61,10 @@ If you have optimization ideas or want to submit patch modules, please **Open an
 ---
 
 ## 👨‍💻 About the Developer
-**I am** a Senior Professional with a strong interest in financial modeling, performance-first instructional systems, and automated agentic AI workflows.
+**I am** a Senior Instructional Designer with a strong interest in financial modeling, performance-first instructional systems, and automated agentic AI workflows.
 
 * **The "Non-Coder" Builder:** I identify as a non-coder, utilizing advanced AI tools to prove that you don't need extensive software development structures to build high-utility, locally-secure full-stack tools.
-* **Other Projects:** Developer of [Rise 360 Quiz Kit](https://github.com/linuxsunil/rise360QuizKit), [Vyapar Lite](https://github.com/linuxsunil/Vyapar-Lite), [MCQ Studio](https://github.com/linuxsunil/MCQ-Studio), and the [Bharat Snack Index](https://github.com/linuxsunil/Bharat-Snack-Index).
+* **Other Projects:** Developer of [Rise 360 Quiz Kit](https://github.com/linuxsunil/rise360QuizKit), [Vyapar Lite](https://github.com/linuxsunil/Vyapar-Lite), and the [MCQ Studio](https://github.com/linuxsunil/MCQ-Studio).
 
 ---
 
